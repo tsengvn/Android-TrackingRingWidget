@@ -7,6 +7,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
@@ -101,11 +102,26 @@ public class TrackingRingView extends ImageView {
         private void initShaders() {
             if (shaders == null) {
                 shaders = new Shader[3];
-                shaders[0] = new SweepGradient(0, 0, Color.parseColor("#01EDF4"), Color.parseColor("#2CFAAE"));
-                shaders[1] = new SweepGradient(0, 0, Color.parseColor("#97FE00"), Color.parseColor("#D5FD35"));
-                shaders[2] = new SweepGradient(0, 0, Color.parseColor("#8D0919"), Color.parseColor("#F93282"));
+                int centerX = getBounds().centerX();
+                int centerY = getBounds().centerY();
+
+                shaders[0] = new SweepGradient(centerX, centerY,
+                        Color.parseColor("#01EDF4"), Color.parseColor("#2CFAAE"));
+                shaders[1] = new SweepGradient(centerX, centerY,
+                        Color.parseColor("#96FD00"), Color.parseColor("#D5FD35"));
+                shaders[2] = new SweepGradient(centerX, centerY,
+                        Color.parseColor("#BF0214"), Color.parseColor("#FA308B"));
+                rotateShader(shaders[0]);
+                rotateShader(shaders[1]);
+                rotateShader(shaders[2]);
             }
 
+        }
+
+        private void rotateShader(Shader shader) {
+            Matrix matrix = new Matrix();
+            matrix.preRotate(START_ANGLE, getBounds().centerX(),  getBounds().centerY());
+            shader.setLocalMatrix(matrix);
         }
 
         private static float getAngleFromProgress(float progress) {
@@ -153,7 +169,7 @@ public class TrackingRingView extends ImageView {
                 ringWidth = ((size - 2 * innerRadius) / mProgressValues.size()) / 2;
                 ringSpace = ringWidth * RING_SPACE_RATIO;
                 drawRingForDataEntry(canvas, 2, Color.parseColor("#66BF0214"), shaders[2], null, "2");
-                drawRingForDataEntry(canvas, 1, Color.parseColor("#6697FE00"), shaders[1], null, "2");
+                drawRingForDataEntry(canvas, 1, Color.parseColor("#6697FE00"), shaders[1], null, "1");
                 drawRingForDataEntry(canvas, 0, Color.parseColor("#6601EDF4"), shaders[0], null, "0");
 
             }
