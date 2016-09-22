@@ -8,8 +8,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.SweepGradient;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -28,9 +31,6 @@ public class TrackingRingView extends ImageView {
     private boolean haveIcon = true;
     private boolean haveColorGradient = true;
 
-    private DataSet mDataSet;
-    private OverlayedCircularProgressDrawable mDrawable;
-
     public TrackingRingView(Context context) {
         super(context);
     }
@@ -44,18 +44,17 @@ public class TrackingRingView extends ImageView {
     }
 
     public void setProgess(float progess1, float progress2, float progress3) {
-
+        ProgressDrawable drawable = new ProgressDrawable(progess1, progress2, progress3);
+        setImageDrawable(drawable);
     }
 
-    public DataSet getDataSet() {
-        return mDataSet;
-    }
 
-    public void setDataSet(DataSet dataSet) {
-        mDataSet = dataSet;
-        mDrawable = new ProgressDrawable(mDataSet, 0.325f);
-        setImageDrawable(mDrawable);
-    }
+
+//    public void setDataSet(DataSet dataSet) {
+//        mDataSet = dataSet;
+//        mDrawable = new ProgressDrawable();
+//        setImageDrawable(mDrawable);
+//    }
 
     private static class ProgressDrawable extends Drawable {
         private final static int PI = 180;
@@ -74,7 +73,7 @@ public class TrackingRingView extends ImageView {
          * Dat set
          */
 
-        private SparseArray<Float> mProgressValues;
+        private SparseArray<Float> mProgressValues ;
         private RectF arcElements;
         private Paint paint;
         private float innerRadius;
@@ -83,6 +82,7 @@ public class TrackingRingView extends ImageView {
         private Animator animator;
 
         private float[] progress;
+        private Shader[] shaders;
 
         public ProgressDrawable(float p1, float p2, float p3) {
             mInnerCircleScale = 0.325f;
@@ -94,7 +94,18 @@ public class TrackingRingView extends ImageView {
             arcElements = new RectF();
             paint = new Paint();
             paint.setAntiAlias(true);
+            mProgressValues = new SparseArray<>();
             initValues();
+        }
+
+        private void initShaders() {
+            if (shaders == null) {
+                shaders = new Shader[3];
+                shaders[0] = new SweepGradient(0, 0, Color.parseColor("#01EDF4"), Color.parseColor("#2CFAAE"));
+                shaders[1] = new SweepGradient(0, 0, Color.parseColor("#97FE00"), Color.parseColor("#D5FD35"));
+                shaders[2] = new SweepGradient(0, 0, Color.parseColor("#8D0919"), Color.parseColor("#F93282"));
+            }
+
         }
 
         private static float getAngleFromProgress(float progress) {
@@ -120,6 +131,11 @@ public class TrackingRingView extends ImageView {
             return changed;
         }
 
+        @Override
+        public int getOpacity() {
+            return PixelFormat.OPAQUE;
+        }
+
         public void animate() {
             setVisible(true, true);
         }
@@ -127,7 +143,7 @@ public class TrackingRingView extends ImageView {
         @Override
         public void draw(Canvas canvas) {
             final Rect bounds = getBounds();
-
+            initShaders();
             // Different component sizes computation
             final int size = Math.min(bounds.height(), bounds.width());
             innerRadius = size * mInnerCircleScale / 2;
@@ -136,7 +152,9 @@ public class TrackingRingView extends ImageView {
             if (mProgressValues != null) {
                 ringWidth = ((size - 2 * innerRadius) / mProgressValues.size()) / 2;
                 ringSpace = ringWidth * RING_SPACE_RATIO;
-                drawRingForDataEntry(canvas, entry);
+                drawRingForDataEntry(canvas, 2, Color.parseColor("#66BF0214"), shaders[2], null, "2");
+                drawRingForDataEntry(canvas, 1, Color.parseColor("#6697FE00"), shaders[1], null, "2");
+                drawRingForDataEntry(canvas, 0, Color.parseColor("#6601EDF4"), shaders[0], null, "0");
 
             }
 
@@ -148,7 +166,7 @@ public class TrackingRingView extends ImageView {
             mProgressValues.put(2, 0.0f);
         }
 
-        private void drawRingForDataEntry(Canvas canvas, int position, int emptyColor, int fillColor,
+        private void drawRingForDataEntry(Canvas canvas, int position, int emptyColor, Shader fillColor,
                                           Drawable drawable, String text) {
 
             final Rect bounds = getBounds();
@@ -169,11 +187,12 @@ public class TrackingRingView extends ImageView {
             canvas.drawArc(arcElements, 0, 2 * PI, false, paint);
 
             // Inner progress ring
-            paint.setColor(fillColor);
+            paint.setShader(fillColor);
             if (position > 0 && position % 2 != 0) {
                 paint.setStrokeWidth(ringWidth - ringSpace);
             }
             canvas.drawArc(arcElements, START_ANGLE, getAngleFromProgress(mProgressValues.get(position)), false, paint);
+            paint.setShader(null);
 
             // Drawable
             if (drawable != null) {

@@ -28,12 +28,12 @@ public class MainActivity extends Activity {
     }
 
     private void configureRingView1() {
-        final List<DataEntry> entries = new ArrayList<>();
-        entries.add(new DataEntry(35, getResources().getDrawable(android.R.drawable.ic_menu_mapmode), Color.BLUE, Color.LTGRAY));
-        entries.add(new DataEntry(50, getResources().getDrawable(android.R.drawable.ic_menu_camera), Color.MAGENTA, Color.WHITE));
-        entries.add(new DataEntry(100, getResources().getDrawable(android.R.drawable.ic_menu_compass), Color.GREEN, Color.LTGRAY));
-        final DataSet dataset = new DataSet(entries);
-        mTrackingRingView1.setDataSet(dataset);
+//        final List<DataEntry> entries = new ArrayListst<>();
+//        entries.add(new DataEntry(35, getResources().getDrawable(android.R.drawable.ic_menu_mapmode), Color.BLUE, Color.LTGRAY));
+//        entries.add(new DataEntry(50, getResources().getDrawable(android.R.drawable.ic_menu_camera), Color.MAGENTA, Color.WHITE));
+//        entries.add(new DataEntry(100, getResources().getDrawable(android.R.drawable.ic_menu_compass), Color.GREEN, Color.LTGRAY));
+//        final DataSet dataset = new DataSet(entries);
+        mTrackingRingView1.setProgess(70, 100, 100);
     }
 
 //    private void configureRingView2() {
